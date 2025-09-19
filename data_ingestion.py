@@ -31,20 +31,8 @@ print('download successful')
 
 
 
-#here we setup our connection
-conn = psycopg2.connect(
-    host = db_config['host'],
-    database = db_config['database'],
-    port = db_config['port'],
-    user = db_config['user'],
-    password = db_config['password']
-)
 
-cur = conn.cursor()
 
-test = cur.execute(
-    "SELECT * FROM information_schema.tables LIMIT 5"
-    )
-#now we 
+
 
     
