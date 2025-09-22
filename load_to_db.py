@@ -25,4 +25,13 @@ test = cur.execute(
     )
 
 
+curr = conn.cursor()
+conn.autocommit = True
+
+data_load = curr.execute(
+
+    "CREATE TABLE de_learner.customers (" \
+    ")"
+)
+
 #now we load our data into the database
