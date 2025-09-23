@@ -100,3 +100,30 @@ curr.execute(
 
 )
 #now we load our data into the database
+
+
+#here we modify some columns in our table by changing data types
+
+curr.execute(
+    "ALTER TABLE de_learner.customers ALTER COLUMN customer_id TYPE VARCHAR(10)"
+)
+
+#transaction table
+curr.execute(
+    "ALTER TABLE de_learner.transactions ALTER COLUMN transactionid TYPE VARCHAR(10)," \
+    "ALTER COLUMN customerid TYPE VARCHAR(10)"
+)
+
+#forcus table
+curr.execute(
+    "ALTER TABLE de_learner.forcus ALTER COLUMN transactionid TYPE VARCHAR(10)," \
+    "ALTER COLUMN customerid TYPE VARCHAR(10) "
+)
+
+#fraud table
+
+curr.execute(
+    "ALTER TABLE de_learner.fraud_tbl ALTER COLUMN transactionid TYPE VARCHAR(10)," \
+    "ALTER COLUMN customerid TYPE VARCHAR(10) "
+)
+
