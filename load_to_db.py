@@ -16,6 +16,8 @@ conn = psycopg2.connect(
 curr = conn.cursor()
 conn.autocommit = True
 
+curr.execute("SET DATESTYLE TO 'DMY';")
+
 #syntax to copy a single csv file into a table in a db
 #with open('customers.csv', 'r') as f:
  #   next(f)
