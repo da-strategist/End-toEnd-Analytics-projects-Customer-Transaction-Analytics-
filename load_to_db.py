@@ -13,49 +13,54 @@ conn = psycopg2.connect(
     password = db_config['password']
 )
 
-#cur = conn.cursor()
-#conn.autocommit = True #this ensures the output is saved or commited to the database. when the table was created initially, it did not reflect in postgres due to the 
-                            #abscence of the autocommit or commit
+curr = conn.cursor()
+conn.autocommit = True
 
-#test = cur.execute(
- #   "CREATE TABLE de_learner.test_tbl (test_id INT PRIMARY KEY, " \
-  #                          "Fname VARCHAR(20), " \
-   #                         "Lname VARCHAR(20))"
+curr.execute("SET DATESTYLE TO 'DMY';")
 
+#syntax to copy a single csv file into a table in a db
+#with open('customers.csv', 'r') as f:
+ #   next(f)
+  #  curr.copy_expert(
+   #     """
+    #COPY de_learner.customers(customer_id," \
+     #                       "cus_DOB," \
+      #                      "cus_gender," \
+       #                     "cus_location," \
+        #                    "cus_balance")
+    #FROM STDIN WITH CSV"""
+     #                       ,
+      #                      f
     #)
 
 
-curr = conn.cursor()
-#conn.autocommit = True
-
-#dropping test table
-
-curr.execute("DROP test_tbl IF EXIST" )
+#now we shall load all files into our database
 
 
-#customers table
-curr.execute(
+#we start by creating a dict pointing to our csv files
 
-    "CREATE TABLE de_learner.customers (" \
-    "customer_id INT PRIMARY KEY," \
-    "cus_DOB DATE," \
-    "cus_gender VARCHAR(10)," \
-    "cus_location VARCHAR(20)," \
-    "cus_balance FLOAT)"
-)
+data_files = {
+    "customers": "raw_data/customers.csv",
+    "forcus": "raw_data/foreign_customer_dataset.csv",
+    "fraud_tbl": "raw_data/fraud_dataset.csv",
+    "transactions": "raw_data/transactions.csv"
+}
+
+for table, file_path in data_files.items():
+    with open(file_path, 'r') as f:
+        curr.copy_expert(
+        f"""
+        COPY de_learner.{table}
+        FROM STDIN WITH CSV HEADER""", 
+        f
+
+    )
+
+conn.commit()
+curr.close()
+conn.close()
 
 
-# transaction table
 
-curr.execute(
-    "CREATE TABLE de_learner.transactions(" \
-    "TransactionID INT PRIMARY KEY" \
-    "CustomerID INT  " \
-    "TransactionDate DATE         " \
-    "TransactionTime TIME        " \
-    "TransactionAmount FLOAT)"
-)
 
-#foreign customer table
-curr.execute()
-#now we load our data into the database
+
