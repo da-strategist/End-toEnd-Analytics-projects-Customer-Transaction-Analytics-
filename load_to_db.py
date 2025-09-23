@@ -26,36 +26,75 @@ conn = psycopg2.connect(
 
 
 curr = conn.cursor()
-#conn.autocommit = True
+conn.autocommit = True
 
 #dropping test table
 
-curr.execute("DROP test_tbl IF EXIST" )
+curr.execute("DROP TABLE IF EXISTS de_learner.test_tbl;") #This deletes the test table created to test connection to our database
 
 
 #customers table
 curr.execute(
 
-    "CREATE TABLE de_learner.customers (" \
+    "CREATE TABLE IF NOT EXISTS de_learner.customers (" \
     "customer_id INT PRIMARY KEY," \
     "cus_DOB DATE," \
     "cus_gender VARCHAR(10)," \
     "cus_location VARCHAR(20)," \
-    "cus_balance FLOAT)"
+    "cus_balance DECIMAL)"
 )
 
 
 # transaction table
 
 curr.execute(
-    "CREATE TABLE de_learner.transactions(" \
-    "TransactionID INT PRIMARY KEY" \
-    "CustomerID INT  " \
-    "TransactionDate DATE         " \
-    "TransactionTime TIME        " \
-    "TransactionAmount FLOAT)"
+    "CREATE TABLE IF NOT EXISTS de_learner.transactions(" \
+    "transactionID INT PRIMARY KEY," \
+    "customerID INT, " \
+    "transactionDate DATE," \
+    "transactionTime TIME," \
+    "transactionAmount DECIMAL)"
 )
 
 #foreign customer table
-curr.execute()
+curr.execute(
+    "CREATE TABLE IF NOT EXISTS de_learner.forcus(" \
+    "id INT PRIMARY KEY," \
+    "transactionID INT," \
+    "customerID INT," \
+    "cus_DOB DATE," \
+    "cus_gender VARCHAR(10)," \
+    "cus_location VARCHAR(20)," \
+    "cus_balance DECIMAL,"
+    "transactionDate DATE," \
+    "transactionTime TIME," \
+    "transactionAmount DECIMAL)"
+    )
+
+#fraud data table
+curr.execute(
+        "CREATE TABLE IF NOT EXISTS de_learner.fraud_tbl (" \
+        "id INT PRIMARY KEY," \
+        "transactionID INT," \
+        "customerID INT," \
+        "customerDOB DATE," \
+        "cus_gender VARCHAR(10)," \
+        "cus_balance DECIMAL,"
+        "transactionDate DATE," \
+        "transactionTime TIME," \
+        "transactionAmount DECIMAL," \
+        "age INT," \
+        "amntscore_by_loc DECIMAL," \
+        "weekday VARCHAR(20)," \
+        "isweekend BOOLEAN," \
+        "isholiday BOOLEAN," \
+        "timeofday VARCHAR(20)," \
+        "islatenight BOOLEAN," \
+        "timesincelastTxn DECIMAL," \
+        "txncountin24hr DECIMAL," \
+        "isanomaly INT," \
+        "riskscore DECIMAL," \
+        "segment VARCHAR(20));"
+
+)
 #now we load our data into the database
