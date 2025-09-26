@@ -73,7 +73,7 @@ curr.execute(
     )
 
 #fraud data table
-curr.execute("DROP TABLE de_learner.fraud_tbl;")
+curr.execute("DROP TABLE IF EXISTS de_learner.fraud_tbl;")
 curr.execute(
         "CREATE TABLE IF NOT EXISTS de_learner.fraud_tbl (" \
         "id INT PRIMARY KEY," \
@@ -81,6 +81,7 @@ curr.execute(
         "customerID INT," \
         "customerDOB DATE," \
         "cus_gender VARCHAR(10)," \
+        "customer_location VARCHAR(100)," \
         "cus_balance DECIMAL,"
         "transactionDate DATE," \
         "transactionTime TIME," \
@@ -112,7 +113,8 @@ curr.execute(
 #transaction table
 curr.execute(
     "ALTER TABLE de_learner.transactions ALTER COLUMN transactionid TYPE VARCHAR(10)," \
-    "ALTER COLUMN customerid TYPE VARCHAR(10)" \
+    "ALTER COLUMN customerid TYPE VARCHAR(10)," \
+    "ALTER COLUMN transactiontime TYPE VARCHAR(10)" \
     
 )
 
@@ -120,14 +122,16 @@ curr.execute(
 curr.execute(
     "ALTER TABLE de_learner.forcus ALTER COLUMN transactionid TYPE VARCHAR(10)," \
     "ALTER COLUMN customerid TYPE VARCHAR(10)," \
-    "ALTER COLUMN cus_location TYPE VARCHAR(100)"
+    "ALTER COLUMN cus_location TYPE VARCHAR(100)," \
+    "ADD COLUMN age INT"
 )
 
 #fraud table
 
 curr.execute(
     "ALTER TABLE de_learner.fraud_tbl ALTER COLUMN transactionid TYPE VARCHAR(10)," \
-    "ALTER COLUMN customerid TYPE VARCHAR(10) "
+    "ALTER COLUMN customerid TYPE VARCHAR(10)," \
+    "ALTER COLUMN transactiontime TYPE TIME"
 )
 
 

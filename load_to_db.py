@@ -51,7 +51,8 @@ for table, file_path in data_files.items():
         curr.copy_expert(
         f"""
         COPY de_learner.{table}
-        FROM STDIN WITH CSV HEADER""", 
+        FROM STDIN WITH CSV HEADER
+        NULL 'NULL' """, #this line is used to handle null value for non_string columns.
         f
 
     )
