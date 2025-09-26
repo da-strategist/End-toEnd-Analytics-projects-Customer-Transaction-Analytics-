@@ -1,33 +1,24 @@
 
----we kick off our data transaformation with the foreign customer table 
+---we kick off our data transaformation with the customer table 
 
 /*
 
 */
 
+---cleaning customer dob column
+WITH dob_cte AS
 
-SELECT COUNT(*) AS grouped
-FROM(
-    SELECT DISTINCT customerid
-                ,COUNT(transactionid) AS tottxn, 
-                MAX(transactiondate) AS lasttxndate
-                ,MIN(transactiondate) AS earliesttxndate
-    FROM de_learner.fraud_tbl
-    GROUP BY customerid
-    HAVING COUNT(transactionid) > 1);
+(
 
+SELECT customer_id,
+        cus_dob,
+        EXTRACT(YEAR FROM cus_dob) AS cus_yr
+FROM customers
 
-SELECT COUNT(*) AS all
-FROM fraud_tbl;
+)
 
-SELECT *
-FROM fraud_tbl
-WHERE customerid = 'C6131774';
-
-SELECT DISTINCT customerid
-                ,COUNT(transactionid) AS tottxn, 
-                MAX(transactiondate) AS lasttxndate
-                ,MIN(transactiondate) AS earliesttxndate
-    FROM de_learner.fraud_tbl
-    GROUP BY customerid
-    HAVING COUNT(transactionid) > 1
+SELECT cus_yr,
+        COUNT(cus_yr)
+FROM dob_cte
+GROUP BY cus_yr
+ORDER BY 1 DESC
