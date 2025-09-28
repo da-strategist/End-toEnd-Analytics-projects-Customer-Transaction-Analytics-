@@ -9,7 +9,69 @@
 
 */
 
----cleaning customer dob column
+---Table 1 Foreign customer table
+
+--- we shall begin by extracting the columns we need into a new table
+
+CREATE TABLE forcus_ext 
+AS
+SELECT customerid,
+        cus_dob,
+        cus_gender,
+        cus_location,
+        age        
+FROM forcus;
+
+
+--we write our syntax to clean the customer location column
+
+SELECT cus_location,
+        regexp_replace(
+        CASE
+            WHEN cus_location LIKE '%PO BOX%'
+            OR LENGTH(cus_location) > 20 THEN split_part(
+                cus_location,
+                ' ',
+                array_length(
+                    string_to_array(cus_location, ' '),
+                    1
+                )
+            )
+            ELSE cus_location
+        END, '[^A-Za-z\s]+', ' ', 'g') AS city_cleaned, 
+        LENGTH(cus_location) AS str_count
+FROM forcus_ext
+
+---now we add a new city column and drop the old cus_location column
+
+ALTER TABLE forcus_ext
+ADD COLUMN cus_city VARCHAR(20)
+
+
+---we populate the newly created column with values
+
+UPDATE forcus_ext
+SET cus_city = regexp_replace(
+        CASE
+            WHEN cus_location LIKE '%PO BOX%'
+            OR LENGTH(cus_location) > 20 THEN split_part(
+                cus_location,
+                ' ',
+                array_length(
+                    string_to_array(cus_location, ' '),
+                    1
+                )
+            )
+            ELSE cus_location
+        END, '[^A-Za-z\s]+', ' ', 'g')
+
+--next we drop the old cus_location column
+
+
+SELECT * FROM forcus_ext
+
+
+----cleaning customer dob column
 
 
 CREATE TABLE de_learner.staging_cus_tbl AS
@@ -138,7 +200,35 @@ AS
                 str_count,
                 city_01
         FROM forcus_CTE
+        ORDER BY 3; 
+    
 
+
+WITH loc_ext_CTE AS (
+    SELECT cus_location,
+    regexp_replace(
+        CASE
+            WHEN cus_location LIKE '%PO BOX%'
+            OR LENGTH(cus_location) > 20 THEN split_part(
+                cus_location,
+                ' ',
+                array_length(
+                    string_to_array(cus_location, ' '),
+                    1
+                )
+            )
+            ELSE cus_location
+        END, '[^A-Za-z\s]+', ' ', 'g') AS city_cleaned, 
+        LENGTH(cus_location) AS str_count
+    FROM forcus ---ORDER BY 4 DESC
+)
+SELECT DISTINCT cus_location,
+    city_cleaned, str_count
+FROM loc_ext_CTE
+ORDER BY 3 DESC
+
+
+ SELECT * FROM forcus
 
 
 
