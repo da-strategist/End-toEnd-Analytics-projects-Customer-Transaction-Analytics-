@@ -67,14 +67,76 @@ SET cus_city = regexp_replace(
 
 --next we drop the old cus_location column
 
+ALTER TABLE forcus_ext
+DROP COLUMN cus_location
 
-SELECT * FROM forcus_ext
+---next we move on to correct other anomalies found in the cus_city column e.g instances where 
+---we have values such as kuala lumpur kualalumpur etc
 
 
-----cleaning customer dob column
+UPDATE forcus_ext
+SET cus_city = TRIM(
+                CASE WHEN cus_city = 'SULTANATE OFOMAN' THEN 'SULTANATE OF OMAN'
+                WHEN cus_city IN('KUALALUMPUR', 'KUALA LAMPUR') THEN 'KUALA LUMPUR'
+                WHEN cus_city = 'DARES SALAAM' THEN 'DAR ES SALAAM'
+                WHEN cus_city = 'DUBAI UAE' THEN 'DUBAI'
+                WHEN cus_city IN('BIETIGHEIM','BIETIGHEIM BISSINGEN') THEN 'BIETIGHEIM-BISSINGEN'
+                WHEN cus_city IN ('AL JUBAIL INSUDTRIAL', 'JUBAILI IND CITY', 'JUBAIL') THEN 'AL JUBAIL'
+                WHEN cus_city = 'KUWAIT CITY' THEN 'KUWAIT'
+                WHEN cus_city = 'KHOBAR' THEN 'AL KHOBAR'
+                ELSE cus_city
+                END) 
 
 
-CREATE TABLE de_learner.staging_cus_tbl AS
+--next we look out for duplicate records
+
+
+WITH dup_check_CTE AS(
+    SELECT *, 
+    RANK() OVER (PARTITION BY customerid ORDER BY customerid DESC) AS rank_
+    FROM forcus_ext
+)
+    SELECT * 
+    FROM dup_check_CTE
+    WHERE rank_ > 1
+
+
+SELECT cus_city, COUNT(customerid) AS tot_count
+FROM forcus_ext
+GROUP BY cus_city
+ORDER BY 2 DESC
+
+---next we take a look at our date column [cus_dob]
+
+SELECT MIN(cus_dob) AS min_dob,
+        MAX(cus_dob) AS max_dob
+FROM forcus_ext;
+
+---from the above query, it is clear our dataset is free of duplicate values
+
+/*now we create a new column called cus_type and populate with the value 'foreign' 
+this helps us trace anomalies when we perform our merge operations
+
+*/
+
+ALTER TABLE forcus_ext
+ADD COLUMN cus_cat VARCHAR(10)
+
+
+UPDATE forcus_ext
+SET cus_cat = 'FOREIGN'
+
+
+
+---now we move on to the customer table
+
+
+
+----starting with the customer dob column
+
+--first we  drop the previously created staging customer table
+---DROP TABLE staging_cus_tbl
+CREATE TABLE de_learner.local_cus_ext AS
 
 WITH dob_cte AS
 
@@ -112,11 +174,22 @@ FROM stag_tbl;
 ---customer location column
 
 --here we add a new column city to hold values for all city names
---ALTER TABLE staging_cus_tbl
---ADD COLUMN city VARCHAR(20)
+ALTER TABLE local_cus_ext
+ADD COLUMN city VARCHAR(20)
+
+SELECT DISTINCT cus_location,
+    LENGTH(cus_location) AS str_len
+FROM local_cus_ext
+ORDER BY 2 DESC
+
+SELECT cus_location,
+        regexp_replace(
+            CASE 
+        )
+FROM local_cus_ext
 
 
-UPDATE staging_cus_tbl
+UPDATE local_cus_ext
 SET city = CASE    WHEN cus_location = 'BANGALORE NORTH' THEN 'BANGALORE'
             WHEN UPPER(cus_location) IN ('NEW DELHI', 'MIRA ROAD E',
                             'WEST MUMBAI', 'RANGA REDDY',
@@ -140,41 +213,10 @@ SET city = CASE    WHEN cus_location = 'BANGALORE NORTH' THEN 'BANGALORE'
 --now we move on to the foreign customer table
 
 
-SELECT cus_location,
-        CASE WHEN position(' ' IN cus_location) > 0
-        THEN split_part(
-            cus_location, 
-            ' ',
-            array_length(string_to_array(cus_location, ' '), 1)
-        )
-        ELSE cus_location
-        END AS forcus_city01,
-        CASE WHEN position(' ' IN cus_location) <= 1
-        THEN split_part(cus_location, ' ', array_length(string_to_array(cus_location, ' '),1
-        )
-        ) END AS forcus_city02, 
-        CASE WHEN position(' ' IN cus_location) <=2
-        THEN split_part(cus_location, ' ', array_length(string_to_array(cus_location, ' '),1
-        )
-        ) END AS forcus_city03
-FROM forcus;
 
 
 
-SELECT customerid,
-        cus_dob,
-        cus_gender,
-        cus_location,
-        cus_balance,
-        age        
-FROM forcus;
 
-SELECT customer_id,
-        cus_dob,
-        cus_gender,
-        city,
-        cus_balance      
-FROM staging_cus_tbl
 /*
 ---cleaning foreign customer table
 
