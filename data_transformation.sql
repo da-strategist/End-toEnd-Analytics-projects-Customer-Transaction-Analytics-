@@ -177,10 +177,54 @@ FROM stag_tbl;
 ALTER TABLE local_cus_ext
 ADD COLUMN city VARCHAR(20)
 
+--we also add a new column to hold customer type
+
+ALTER TABLE local_cus_ext
+ADD cus_cat VARCHAR(10);
+
+UPDATE local_cus_ext
+SET cus_cat = 'LOCAL'
+
+
+
+
+
+WITH dummy_loc
+AS(
 SELECT DISTINCT cus_location,
-    LENGTH(cus_location) AS str_len
+    LENGTH(cus_location) AS str_len,
+    --split_part(cus_location, ' ', 
+           -- array_length(string_to_array(cus_location, ' '),1)) AS cityy
+            ---string_to_array(cus_location, ' ') AS splitt,
+            split_part(cus_location, ' ', 1) AS loc_1,
+             split_part(cus_location, ' ', 2) AS loc_2,
+              split_part(cus_location, ' ', 3) AS loc_3,
+            split_part(cus_location, ' ', 4) AS loc_4,
+            split_part(cus_location, ' ', 5) AS loc_5,
+            array_length(string_to_array(cus_location, ' '), 1) AS parts_count
+          /*  CASE    WHEN cus_location = 'BANGALORE NORTH' THEN 'BANGALORE'
+            WHEN UPPER(cus_location) IN ('NEW DELHI', 'MIRA ROAD E',
+                            'WEST MUMBAI', 'RANGA REDDY',
+                            'GUNTUR DIST', 'TIRUPATI (RURAL)',
+                            'KALYAN W', 'THANE W', 'GREATER NOIDA',
+                            'ARIYALUR DISTRICT', 'BHILAI I',
+                            'AMBALA CANTT', 'NAGAI DT',
+                            'REWARI (HARYANA)') 
+                            THEN cus_location
+        WHEN position(' ' IN cus_location) > 0
+        THEN split_part(
+            cus_location, 
+            ' ', 
+            array_length(string_to_array(cus_location, ' '), 1)
+        )
+        ELSE cus_location
+        END AS new_loc*/
 FROM local_cus_ext
-ORDER BY 2 DESC
+--ORDER BY 8 DESC
+)
+SELECT *
+FROM dummy_loc
+WHERE parts_count = 5
 
 SELECT cus_location,
         regexp_replace(
