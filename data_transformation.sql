@@ -12,13 +12,14 @@
 ---Table 1 Foreign customer table
 
 --- we shall begin by extracting the columns we need into a new table
-
+DROP TABLE forcus_ext;
 CREATE TABLE forcus_ext 
 AS
 SELECT customerid,
         cus_dob,
         cus_gender,
         cus_location,
+        cus_balance,
         age        
 FROM forcus;
 
@@ -120,7 +121,7 @@ this helps us trace anomalies when we perform our merge operations
 */
 
 ALTER TABLE forcus_ext
-ADD COLUMN cus_cat VARCHAR(10)
+ADD COLUMN cus_cat VARCHAR(10);
 
 
 UPDATE forcus_ext
@@ -185,10 +186,13 @@ ADD cus_cat VARCHAR(10);
 UPDATE local_cus_ext
 SET cus_cat = 'LOCAL'
 
+alter table local_cus_ext
+ADD age INT
 
 
 
 
+---here we update the cutomer city column
 
 UPDATE local_cus_ext
 SET city = CASE    WHEN cus_location = 'BANGALORE NORTH' THEN 'BANGALORE'
@@ -213,8 +217,60 @@ SET city = CASE    WHEN cus_location = 'BANGALORE NORTH' THEN 'BANGALORE'
 
 
 
+SELECT * FROM local_cus_ext;
+SELECT * FROM forcus_ext
 
---now we move on to the foreign customer table
+
+---now we perform a union of both table to combione the datasets
+DROP TABLE customer_tbl;
+CREATE TABLE customer_tbl AS
+
+SELECT customer_id, 
+        cus_gender, 
+        city,
+        cus_dob,
+        cus_cat,
+        cus_balance,
+        age
+FROM local_cus_ext
+
+union
+
+SELECT customerid,
+        cus_gender, 
+        cus_city,
+        cus_dob,
+        cus_cat,
+        cus_balance,
+        age
+FROM forcus_ext
+
+SELECT * FROM customer_tbl
+
+--now we move on to the transaction table
+
+
+SELECT * FROM forcus;
+SELECT * FROM transactions
+
+
+SELECT transactionid,
+        customerid,
+        transactiondate,
+        transactiontime,
+        transactionamount
+FROM transactions
+
+UNION
+
+SELECT transactionid,
+    customerid,
+    transactiondate,
+    transactiontime,
+    transactionamount
+FROM forcus
+
+
 
 
 
