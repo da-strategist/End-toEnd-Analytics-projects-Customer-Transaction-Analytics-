@@ -189,68 +189,28 @@ SET cus_cat = 'LOCAL'
 
 
 
-WITH dummy_loc
-AS(
-SELECT DISTINCT cus_location,
-    LENGTH(cus_location) AS str_len,
-    --split_part(cus_location, ' ', 
-           -- array_length(string_to_array(cus_location, ' '),1)) AS cityy
-            ---string_to_array(cus_location, ' ') AS splitt,
-            split_part(cus_location, ' ', 1) AS loc_1,
-             split_part(cus_location, ' ', 2) AS loc_2,
-              split_part(cus_location, ' ', 3) AS loc_3,
-            split_part(cus_location, ' ', 4) AS loc_4,
-            split_part(cus_location, ' ', 5) AS loc_5,
-            array_length(string_to_array(cus_location, ' '), 1) AS parts_count
-          /*  CASE    WHEN cus_location = 'BANGALORE NORTH' THEN 'BANGALORE'
-            WHEN UPPER(cus_location) IN ('NEW DELHI', 'MIRA ROAD E',
-                            'WEST MUMBAI', 'RANGA REDDY',
-                            'GUNTUR DIST', 'TIRUPATI (RURAL)',
-                            'KALYAN W', 'THANE W', 'GREATER NOIDA',
-                            'ARIYALUR DISTRICT', 'BHILAI I',
-                            'AMBALA CANTT', 'NAGAI DT',
-                            'REWARI (HARYANA)') 
-                            THEN cus_location
-        WHEN position(' ' IN cus_location) > 0
-        THEN split_part(
-            cus_location, 
-            ' ', 
-            array_length(string_to_array(cus_location, ' '), 1)
-        )
-        ELSE cus_location
-        END AS new_loc*/
-FROM local_cus_ext
---ORDER BY 8 DESC
-)
-SELECT *
-FROM dummy_loc
-WHERE parts_count = 5
-
-SELECT cus_location,
-        regexp_replace(
-            CASE 
-        )
-FROM local_cus_ext
-
 
 UPDATE local_cus_ext
 SET city = CASE    WHEN cus_location = 'BANGALORE NORTH' THEN 'BANGALORE'
-            WHEN UPPER(cus_location) IN ('NEW DELHI', 'MIRA ROAD E',
+        WHEN cus_location = 'GHINGHARTOLA TEH BAGESHWAR DIST' THEN 'BAGESHWAR'
+        WHEN cus_location = 'MIRABHAYANDER THANE MIRA ROAD' THEN 'MIRA ROAD E'
+                WHEN UPPER(cus_location) IN ('NEW DELHI', 'MIRA ROAD E',
                             'WEST MUMBAI', 'RANGA REDDY',
                             'GUNTUR DIST', 'TIRUPATI (RURAL)',
                             'KALYAN W', 'THANE W', 'GREATER NOIDA',
                             'ARIYALUR DISTRICT', 'BHILAI I',
                             'AMBALA CANTT', 'NAGAI DT',
-                            'REWARI (HARYANA)') 
-                            THEN cus_location
-        WHEN position(' ' IN cus_location) > 0
-        THEN split_part(
-            cus_location, 
-            ' ', 
-            array_length(string_to_array(cus_location, ' '), 1)
-        )
-        ELSE cus_location
-        END
+                            'REWARI (HARYANA)', 'KANJURMARG EAST', 'KARUR DT'
+                            ,'MEDAK DIST'
+                            ) 
+                            THEN regexp_replace(cus_location, '[^a-zA-Z ]', '', 'g')
+                WHEN array_length(string_to_array(cus_location, ' '),1) = 1 THEN split_part(cus_location, ' ', 1)
+                WHEN array_length(string_to_array(cus_location, ' '),1) = 5 THEN split_part(cus_location, ' ', 5) 
+                WHEN array_length(string_to_array(cus_location, ' '),1) = 4 THEN split_part(cus_location, ' ', 4) 
+                WHEN array_length(string_to_array(cus_location, ' '),1) = 3 THEN split_part(cus_location, ' ', 3) 
+                WHEN array_length(string_to_array(cus_location, ' '),1) = 2 THEN split_part(cus_location, ' ', 2)  
+         END    
+
 
 
 
