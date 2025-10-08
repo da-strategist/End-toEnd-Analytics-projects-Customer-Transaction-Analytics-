@@ -3,7 +3,7 @@ import psycopg2
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 from azure.identity import DefaultAzureCredential
 from db_config import db_config
-from keys import connection_string, container_name
+import constants
 from io import BytesIO
 
 conn = psycopg2.connect(
@@ -19,7 +19,7 @@ data = conn.cursor()
 data.execute("SELECT * FROM staging_customer_tbl")
 cus_data = data.fetchall()
 cus_prod_data = pd.DataFrame(cus_data)
-print(cus_data.head())
+print(cus_prod_data.head())
 
 
 
@@ -27,18 +27,38 @@ txn_data = conn.cursor()
 txn_data.execute("SELECT * FROM staging_txn_tbl")
 txnn_data = txn_data.fetchall()
 txn_prod_data = pd.DataFrame(txnn_data)
-print(txnn_data.head())
+print(txn_prod_data.head())
+
+connection_string = constants.blob_connect
 
 
 blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-container_client = blob_service_client.get_container_client(container_name)
-blob_client = container_client.get_blob_client(blob_name)
+
+#blob_client = blob_service_client.get_blob_client(container = 'banktxnproj' , blob= 'cus_prod_data' )
 
 
 ###Now we will load out data to our blob storage 
 
-cus_data_buffer = BytesIO()
-cus_data.to_csv(cus_data_buffer, index = False)
-cus_data_buffer.seek(0)
+uploads = [
+    (cus_prod_data, 'cus_prod_data.csv'),
+    (txn_prod_data, 'txn_prod_data.csv')
+]
 
-blob_client.upload_blob()
+for df, blob_name in uploads:
+    buffer = BytesIO()
+    data = df.to_csv(buffer, index = False)
+    sss = buffer.seek(0)
+
+    blob_client = blob_service_client.get_blob_client(
+        container= 'banktxnproj', 
+        blob= blob_name
+    )
+    blob_client.upload_blob(data= buffer, overwrite = True)
+    print(f"{blob_name}: Data upload successful")
+
+
+
+
+
+
+

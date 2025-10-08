@@ -1,16 +1,17 @@
 [project]
-name = "learning-projects"
+name = "END_TO_END_PROJECT_01"
 version = "0.1.0"
-description = "This directory houses my first data engineering project. the task here is to ingest datasets from kaggle into postgressql for transformation
-                and analytics, afterwhich the production datasets will be loaded to azure blob storage and finally to power bi for further 
-                analytics and visualization"
+description = "This directory houses my first data engineering project."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [  "dagster>=1.11.10",
-    "dagster-webserver>=1.11.10",
-    "kaggle>=1.7.4.5",
-    "numpy>=2.3.3",
-    "pandas>=2.3.2",
-    "psycopg2>=2.9.10",
+dependencies = [
+  "azure-identity>=1.25.0",
+  "azure-storage-blob>=12.26.0",
+  "dagster>=1.11.10",
+  "dagster-webserver>=1.11.10",
+  "kaggle>=1.7.4.5",
+  "numpy>=2.3.3",
+  "pandas>=2.3.2",
+  "psycopg2>=2.9.10",
 ]
 

@@ -303,4 +303,58 @@ SELECT DISTINCT cus_location,
 FROM local_cus_ext
 ORDER BY 1 ASC
 
+
+
+WITH forcus_CTE AS (
+    SELECT *,
+        length(cus_location) AS str_count,
+        CASE
+            WHEN cus_location LIKE '%PO BOX%'
+            OR LENGTH(cus_location) > 20 THEN split_part(
+                cus_location,
+                ' ',
+                array_length(
+                    string_to_array(cus_location, ' '),
+                    1
+                )
+            )
+            ELSE cus_location
+        END AS city_01
+    FROM forcus --- ORDER BY 2 DESC
+)
+SELECT customerid,
+    cus_location,
+    str_count,
+    city_01
+FROM forcus_CTE
+ORDER BY 3;
+WITH loc_ext_CTE AS (
+    SELECT cus_location,
+        regexp_replace(
+            CASE
+                WHEN cus_location LIKE '%PO BOX%'
+                OR LENGTH(cus_location) > 20 THEN split_part(
+                    cus_location,
+                    ' ',
+                    array_length(
+                        string_to_array(cus_location, ' '),
+                        1
+                    )
+                )
+                ELSE cus_location
+            END,
+            '[^A-Za-z\s]+',
+            ' ',
+            'g'
+        ) AS city_cleaned,
+        LENGTH(cus_location) AS str_count
+    FROM forcus ---ORDER BY 4 DESC
+)
+SELECT DISTINCT cus_location,
+    city_cleaned,
+    str_count
+FROM loc_ext_CTE
+ORDER BY 3 DESC
+SELECT *
+FROM forcus
  
